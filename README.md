@@ -209,7 +209,7 @@ Germany, instead of someone else's cloud black box.
 That is where this tool comes from. Operating a GPU cluster means watching thermals,
 power draw and VRAM continuously — but every hardware panel on the market speaks only
 LibreHardwareMonitor, and LibreHardwareMonitor speaks only Windows. So we taught Linux
-its language and released the result under the MIT license.
+to speak that protocol, and released the result under the MIT license.
 
 Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)**.
 

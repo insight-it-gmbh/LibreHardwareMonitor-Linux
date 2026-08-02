@@ -24,6 +24,8 @@ Sensor sources (each is optional and skipped when unavailable)
     smartctl     Disk temperatures
     /proc        Memory usage and load average
 
+Author:  Dominic Ballenthin <dominic.ballenthin@insight-it.de>
+Company: Insight-IT GmbH, Berlin — https://www.insight-it.de
 SPDX-License-Identifier: MIT
 """
 
@@ -39,6 +41,8 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 __version__ = "1.0.0"
+__author__ = "Dominic Ballenthin, Insight-IT GmbH"
+__license__ = "MIT"
 
 # Version string reported to clients in /data.json. Some clients compare this
 # against a minimum, so we advertise a realistic LibreHardwareMonitor version.

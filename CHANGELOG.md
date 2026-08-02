@@ -20,3 +20,5 @@ Initial public release.
 - CLI and environment configuration for port, bind address, poll interval, decimal separator
   and reported hostname; `--list-sensors` for inspection.
 - `install.sh` and a hardened systemd unit.
+
+Developed by Dominic Ballenthin at Insight-IT GmbH, Berlin.

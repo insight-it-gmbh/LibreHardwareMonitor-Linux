@@ -2,6 +2,11 @@
 
 **Read Linux hardware sensors with LibreHardwareMonitor clients.**
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Dependencies: none](https://img.shields.io/badge/Dependencies-none-brightgreen.svg)](#)
+[![Made by Insight-IT GmbH](https://img.shields.io/badge/Made%20by-Insight--IT%20GmbH-9DCD5A.svg)](https://www.insight-it.de)
+
 [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (LHM) is
 Windows-only — it depends on a Ring-0 kernel driver and WMI. But a whole ecosystem of clients
 speaks its simple HTTP/JSON protocol: Elgato Stream Deck plugins, yasb, Home Assistant,
@@ -185,10 +190,22 @@ Nouveau, network throughput sensors, and reports from clients not yet listed abo
 
 Please keep the zero-dependency, standard-library-only constraint.
 
+## Authors
+
+Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)** at
+**[Insight-IT GmbH](https://www.insight-it.de)**, Berlin — an IT systems house working on
+server infrastructure, virtualisation and self-hosted AI.
+
+We built this because we needed it ourselves: a rack full of Linux GPU servers, and every
+hardware panel on the market speaking only LibreHardwareMonitor. It is released under the
+MIT license in case it is useful to you too.
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
 
-LibreHardwareMonitor-Linux is an independent, clean-room implementation of the LibreHardwareMonitor JSON
-endpoint. It contains no upstream code. LibreHardwareMonitor itself is licensed under the
-MPL-2.0 and is not affiliated with this project.
+Copyright © 2026 Insight-IT GmbH, Berlin — Dominic Ballenthin.
+
+LibreHardwareMonitor-Linux is an independent, clean-room implementation of the
+LibreHardwareMonitor JSON endpoint. It contains no upstream code. LibreHardwareMonitor
+itself is licensed under the MPL-2.0 and is not affiliated with this project.

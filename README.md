@@ -196,9 +196,8 @@ Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)** 
 **[Insight-IT GmbH](https://www.insight-it.de)**, Berlin — an IT systems house working on
 server infrastructure, virtualisation and self-hosted AI.
 
-We built this because we needed it ourselves: a rack full of Linux GPU servers, and every
-hardware panel on the market speaking only LibreHardwareMonitor. It is released under the
-MIT license in case it is useful to you too.
+We built this because we needed it ourselves, and released it under the MIT license in
+case it is useful to you too.
 
 ## License
 

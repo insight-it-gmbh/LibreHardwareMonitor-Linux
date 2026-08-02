@@ -7,6 +7,10 @@
 [![Dependencies: none](https://img.shields.io/badge/Dependencies-none-brightgreen.svg)](#)
 [![Made by Insight-IT GmbH](https://img.shields.io/badge/Made%20by-Insight--IT%20GmbH-9DCD5A.svg)](https://www.insight-it.de)
 
+> Built at **[Insight-IT GmbH](https://www.insight-it.de)** in Berlin, where we run a
+> GPU cluster for **sovereign, self-hosted AI** — and needed a way to watch it from the
+> same panels everyone already uses. *We run your AI.*
+
 [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (LHM) is
 Windows-only — it depends on a Ring-0 kernel driver and WMI. But a whole ecosystem of clients
 speaks its simple HTTP/JSON protocol: Elgato Stream Deck plugins, yasb, Home Assistant,
@@ -190,14 +194,42 @@ Nouveau, network throughput sensors, and reports from clients not yet listed abo
 
 Please keep the zero-dependency, standard-library-only constraint.
 
-## Authors
+## About the authors
 
-Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)** at
-**[Insight-IT GmbH](https://www.insight-it.de)**, Berlin — an IT systems house working on
-server infrastructure, virtualisation and self-hosted AI.
+<a href="https://www.insight-it.de">
+  <img src=".assets/logo.svg" alt="Insight-IT GmbH" height="64" align="left" hspace="20" vspace="4">
+</a>
 
-We built this because we needed it ourselves, and released it under the MIT license in
-case it is useful to you too.
+**[Insight-IT GmbH](https://www.insight-it.de)** is an IT systems house in Berlin, Germany.
+For over 25 years we have run infrastructure for mid-sized companies — and today we run
+**sovereign AI**: large language models, speech and document AI on our **own GPU cluster**,
+hosted in Germany, instead of someone else's cloud black box.
+
+<br clear="left">
+
+That is where this tool comes from. Operating a GPU cluster means watching thermals,
+power draw and VRAM continuously — but every hardware panel on the market speaks only
+LibreHardwareMonitor, and LibreHardwareMonitor speaks only Windows. So we taught Linux
+its language and released the result under the MIT license.
+
+Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)**.
+
+**What we do — self-hosted, GDPR-compliant, EU AI Act aware:**
+
+| | |
+|---|---|
+| **Sovereign AI** | LLMs, RAG and voice on our own GPU cluster in Germany — no data leaves the country |
+| **Document AI** | Understand, classify and extract from documents at scale |
+| **Automation** | Orchestrate knowledge-heavy workflows across systems |
+| **Managed IT & Cloud** | Infrastructure, virtualisation, Microsoft 365, Nextcloud |
+| **IT Security** | Audits, hardening, monitoring, incident response |
+
+*We run your AI.* → **[insight-it.de](https://www.insight-it.de)**
+
+[![Website](https://img.shields.io/badge/Website-insight--it.de-9DCD5A?style=flat-square&logo=firefoxbrowser&logoColor=white)](https://www.insight-it.de)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Insight--IT-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/insight-it-gmbh-06b979171/)
+[![Facebook](https://img.shields.io/badge/Facebook-Insight--IT-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://www.facebook.com/insightitberlin/)
+[![GitHub](https://img.shields.io/badge/GitHub-insight--it--gmbh-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/insight-it-gmbh)
 
 ## License
 

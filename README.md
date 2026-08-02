@@ -4,8 +4,8 @@
 
 [LibreHardwareMonitor](https://github.com/LibreHardwareMonitor/LibreHardwareMonitor) (LHM) is
 Windows-only — it depends on a Ring-0 kernel driver and WMI. But a whole ecosystem of clients
-speaks its simple HTTP/JSON protocol: Stream Deck plugins, Decky/Steam Deck plugins, yasb,
-Home Assistant, Grafana dashboards, and more.
+speaks its simple HTTP/JSON protocol: Elgato Stream Deck plugins, yasb, Home Assistant,
+Grafana dashboards, and more.
 
 This project does not port the application. It re-implements the **protocol** on top of native
 Linux sensor sources, so any existing LHM client can read a Linux machine exactly as if it were
@@ -15,7 +15,7 @@ a Windows PC. Point the client at the host and port — nothing else changes.
 ┌─────────────────┐   HTTP GET /data.json   ┌──────────────────────────────┐
 │  LHM client     │ ──────────────────────► │  lhm-linux (Linux host)      │
 │  Stream Deck    │                         │                              │
-│  Steam Deck     │ ◄────────────────────── │  nvidia-smi · lm-sensors     │
+│  Grafana        │ ◄────────────────────── │  nvidia-smi · lm-sensors     │
 │  Home Assistant │   LHM-compatible JSON   │  ipmitool  · smartctl · proc │
 └─────────────────┘                         └──────────────────────────────┘
 ```
@@ -29,8 +29,8 @@ a Windows PC. Point the client at the host and port — nothing else changes.
 
 ## Why this exists
 
-Monitoring a Windows gaming PC from a Steam Deck or Stream Deck is a solved problem. Doing the
-same for the Linux box in the rack is not — the clients only speak LHM. Rather than writing a
+Monitoring a Windows PC from a Stream Deck is a solved problem. Doing the same for the Linux
+box in the rack is not — the clients only speak LHM. Rather than writing a
 new client for every panel, lhm-linux makes the Linux server speak the protocol the panels
 already understand.
 
@@ -92,7 +92,6 @@ Any client that talks to LibreHardwareMonitor's web server works. Replace
 | Client | Where to set it |
 |---|---|
 | Stream Deck "System Vitals" | Plugin settings → *Libre Webserver* URL |
-| Steam Deck / Decky plugins | Plugin settings → remote host + port |
 | yasb `libre_monitor` widget | `libre_monitor_url` in the widget config |
 | Home Assistant | *LibreHardwareMonitor* integration → host + port |
 | Prometheus | Scrape `http://<host>:8085/metrics.txt` |

@@ -4,8 +4,8 @@ lhm-linux — a LibreHardwareMonitor-compatible sensor web server for Linux.
 
 LibreHardwareMonitor (LHM) is Windows-only: it relies on a Ring-0 kernel driver
 and WMI. A whole ecosystem of clients speaks its simple HTTP/JSON protocol,
-though — Stream Deck plugins, Decky/Steam Deck plugins, yasb, Home Assistant,
-Grafana dashboards and more.
+though — Elgato Stream Deck plugins, yasb, Home Assistant, Grafana
+dashboards and more.
 
 This project does not port the application. It re-implements the *protocol* on
 top of native Linux sensor sources, so any existing LHM client can read a Linux

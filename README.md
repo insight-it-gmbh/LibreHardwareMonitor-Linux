@@ -25,7 +25,7 @@ a Windows PC. Point the client at the host and port — nothing else changes.
 - **Servers included** — reads BMC/IPMI board temperatures, fans, voltages and PSU wattage,
   not just CPU and GPU.
 - **Prometheus built in** — `/metrics.txt` with the same `lhm_*` metric names as upstream.
-- Lightweight: ~22 MB RSS and well under 1 % of one core on a 6-GPU dual-socket server.
+- Lightweight: ~22 MB RSS and well under 1 %.
 
 ## Why this exists
 

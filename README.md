@@ -13,7 +13,7 @@ a Windows PC. Point the client at the host and port — nothing else changes.
 
 ```
 ┌─────────────────┐   HTTP GET /data.json   ┌──────────────────────────────┐
-│  LHM client     │ ──────────────────────► │  lhm-linux (Linux host)   │
+│  LHM client     │ ──────────────────────► │  lhm-linux (Linux host)      │
 │  Stream Deck    │                         │                              │
 │  Steam Deck     │ ◄────────────────────── │  nvidia-smi · lm-sensors     │
 │  Home Assistant │   LHM-compatible JSON   │  ipmitool  · smartctl · proc │
@@ -38,7 +38,7 @@ already understand.
 
 ```bash
 git clone https://github.com/insight-it-gmbh/LibreHardwareMonitor-Linux.git
-cd lhm-linux
+cd LibreHardwareMonitor-Linux
 sudo python3 lhmlinux/server.py
 ```
 

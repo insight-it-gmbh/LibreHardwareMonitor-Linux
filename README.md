@@ -34,13 +34,13 @@ a Windows PC. Point the client at the host and port — nothing else changes.
 - **Servers included** — reads BMC/IPMI board temperatures, fans, voltages and PSU wattage,
   not just CPU and GPU.
 - **Prometheus built in** — `/metrics.txt` with the same `lhm_*` metric names as upstream.
-- Lightweight: ~22 MB RSS and well under 1 %.
+- Lightweight: ~25 MB RSS and well under 1 % CPU.
 
 ## Why this exists
 
 Monitoring a Windows PC from a Stream Deck is a solved problem. Doing the same for the Linux
 box in the rack is not — the clients only speak LHM. Rather than writing a
-new client for every panel, lhm-linux makes the Linux server speak the protocol the panels
+new client for every panel, this server makes the Linux box speak the protocol the panels
 already understand.
 
 ## Quick start
@@ -104,6 +104,7 @@ Any client that talks to LibreHardwareMonitor's web server works. Replace
 | yasb `libre_monitor` widget | `libre_monitor_url` in the widget config |
 | Home Assistant | *LibreHardwareMonitor* integration → host + port |
 | Prometheus | Scrape `http://<host>:8085/metrics.txt` |
+| Grafana | Add the Prometheus scrape above as a data source, then query `lhm_*` |
 
 Sensor IDs follow upstream conventions, so existing client configs keep working:
 
@@ -136,6 +137,7 @@ Every option has a CLI flag and an environment variable.
 | `--decimal` | `LHM_DECIMAL` | `comma` | `comma` or `dot` (see below) |
 | `--hostname` | `LHM_HOSTNAME` | system hostname | Name of the computer node |
 | `--list-sensors` | — | — | Print detected sensors and exit |
+| `-V, --version` | — | — | Print the version and exit |
 
 For the systemd unit, edit the `Environment=` lines in
 `/etc/systemd/system/lhm-linux.service`, then

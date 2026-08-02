@@ -1,0 +1,37 @@
+[project]
+name = "lhm-linux"
+version = "1.0.0"
+description = "LibreHardwareMonitor-compatible sensor web server for Linux"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+keywords = ["monitoring", "sensors", "librehardwaremonitor", "prometheus",
+            "temperature", "gpu", "ipmi", "smart"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: No Input/Output (Daemon)",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Topic :: System :: Monitoring",
+]
+dependencies = []
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+# Sensible default set. The project is standard-library only, so the checks
+# that matter are correctness and obvious bugs rather than typing strictness.
+select = ["E", "F", "W", "B", "C4", "UP", "RUF"]
+ignore = [
+    "E501",    # long lines are handled by line-length above
+    "UP006",   # keep builtin generics compatible with Python 3.9
+    "UP007",   # ditto for X | Y annotations
+    "UP045",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]  # sys.path is adjusted before importing the server

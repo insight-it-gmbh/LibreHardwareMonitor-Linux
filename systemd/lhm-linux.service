@@ -1,0 +1,32 @@
+[Unit]
+Description=lhm-linux - LibreHardwareMonitor-compatible sensor server
+Documentation=https://github.com/insight-it-gmbh/LibreHardwareMonitor-Linux
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Root is required for IPMI (/dev/ipmi0) and SMART (ATA passthrough).
+# Run as a normal user if you only need GPU, CPU and memory sensors.
+User=root
+Environment=LHM_PORT=8085
+Environment=LHM_BIND=0.0.0.0
+Environment=LHM_DECIMAL=comma
+ExecStart=/usr/bin/python3 /opt/lhm-linux/server.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Hardening: the service only reads sensors and serves HTTP.
+NoNewPrivileges=yes
+ProtectHome=yes
+ProtectSystem=strict
+PrivateTmp=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=yes
+
+[Install]
+WantedBy=multi-user.target

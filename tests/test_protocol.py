@@ -43,16 +43,19 @@ def build_fixture():
 
 
 def install_fixture():
-    hardware = build_fixture()
+    """Publish the fixture the way the pollers do, one entry per source."""
+    gpu, board = build_fixture()
     with server._lock:
-        server._snapshot["hardware"] = hardware
+        server._results.clear()
+        server._results["gpus"] = [gpu]
+        server._results["ipmi"] = [board]
         server._minmax.clear()
-        for hw in hardware:
+        for hw in (gpu, board):
             for sensor in hw.sensors:
                 if sensor.value is not None:
                     server._minmax[sensor.sid] = [sensor.value - 1.0,
                                                   sensor.value + 1.0]
-    return hardware
+    return [gpu, board]
 
 
 def iter_sensors(node, out=None):
@@ -270,9 +273,9 @@ class TestMetrics(unittest.TestCase):
 class TestRobustness(unittest.TestCase):
     def test_sources_never_raise(self):
         """Every source must return a list even with no hardware present."""
-        for source in server.SOURCES:
+        for source, key, _interval in server.SOURCES:
             result = source()
-            self.assertIsInstance(result, list, source.__name__)
+            self.assertIsInstance(result, list, key)
 
     def test_poll_all_survives_a_broken_source(self):
         def broken():
@@ -280,10 +283,25 @@ class TestRobustness(unittest.TestCase):
 
         original = server.SOURCES
         try:
-            server.SOURCES = (broken, server.poll_memory)
+            server.SOURCES = ((broken, "broken", None),
+                              (server.poll_memory, "memory", None))
             self.assertIsInstance(server.poll_all(), list)
         finally:
             server.SOURCES = original
+
+    def test_slow_sources_have_their_own_interval(self):
+        """IPMI and SMART must never run at the fast interval.
+
+        A BMC can take over ten seconds to answer. Polling it in the fast
+        loop stalls CPU and GPU updates behind it, which shows up as a
+        frozen display on a hardware panel.
+        """
+        intervals = {key: interval for _s, key, interval in server.SOURCES}
+        self.assertIsNotNone(intervals["ipmi"], "IPMI must be polled slowly")
+        self.assertIsNotNone(intervals["disks"], "SMART must be polled slowly")
+        self.assertGreaterEqual(intervals["ipmi"], 15.0)
+        for fast in ("cpu", "gpus", "memory"):
+            self.assertIsNone(intervals[fast], f"{fast} must stay on the fast loop")
 
     def test_to_float_accepts_both_separators(self):
         self.assertEqual(server.to_float("11,81"), 11.81)

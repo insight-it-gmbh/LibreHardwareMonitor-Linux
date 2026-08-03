@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-08-03
+
+### Fixed
+- **Slow sensor sources no longer stall fast ones.** Every source ran in one shared
+  loop, so a BMC that takes 5-13 seconds to answer `ipmitool sdr` delayed CPU and GPU
+  updates behind it — the whole cycle took ~9 s instead of the configured 2 s, which
+  looks like a frozen display on a hardware panel. Each source now polls in its own
+  thread at its own cadence: CPU, GPU and memory every 2 s, BMC/IPMI every 30 s, SMART
+  every 300 s. Measured on a 6-GPU server, the number of values updating within a
+  12-second window went from 22/143 to 48/143.
+
+### Changed
+- `SOURCES` entries are now `(function, key, interval)` tuples; `interval=None` means
+  the fast interval from `--interval`.
+- Readings are stored per source, so one slow or failing source no longer blanks the
+  others between cycles.
+
 ## [1.0.0] - 2026-08-02
 
 Initial public release.

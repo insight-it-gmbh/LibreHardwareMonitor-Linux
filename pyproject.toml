@@ -1,6 +1,6 @@
 [project]
 name = "lhm-linux"
-version = "1.0.0"
+version = "1.1.0"
 description = "LibreHardwareMonitor-compatible sensor web server for Linux"
 readme = "README.md"
 requires-python = ">=3.9"

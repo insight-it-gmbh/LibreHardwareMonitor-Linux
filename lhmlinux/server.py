@@ -40,7 +40,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"
 __author__ = "Dominic Ballenthin, Insight-IT GmbH"
 __license__ = "MIT"
 
@@ -49,13 +49,20 @@ __license__ = "MIT"
 LHM_VERSION = "0.9.4"
 
 DEFAULT_PORT = 8085          # LibreHardwareMonitor's default port
-DEFAULT_INTERVAL = 2.0       # seconds between sensor polls
+DEFAULT_INTERVAL = 2.0       # seconds between fast sensor polls
+
+# Some sources are far too slow to sit in the fast loop. A BMC answers
+# "ipmitool sdr" in anything from 5 to 13 seconds, and SMART can spin up disks.
+# Polling them at the fast interval would stall CPU and GPU updates behind them,
+# which looks exactly like a frozen display on a hardware panel. Each source
+# therefore runs on its own cadence in its own thread.
+SLOW_INTERVAL = 30.0         # BMC/IPMI: board temps, fans, voltages, PSU watts
 DISK_INTERVAL = 300.0        # SMART is expensive and can spin up disks
 
 _lock = threading.Lock()
 _snapshot: dict = {"ts": 0.0, "hardware": []}
+_results: dict[str, list] = {}         # source key -> its most recent readings
 _minmax: dict[str, list[float]] = {}   # SensorId -> [min, max] since start
-_disk_cache: dict = {"ts": 0.0, "data": []}
 
 # Populated from CLI arguments in main().
 CONFIG = {"decimal_comma": True, "hostname": None, "interval": DEFAULT_INTERVAL}
@@ -363,10 +370,6 @@ SMART_ATTR = re.compile(
 
 
 def poll_disks() -> list[Hardware]:
-    now = time.time()
-    if _disk_cache["data"] and now - _disk_cache["ts"] < DISK_INTERVAL:
-        return _disk_cache["data"]
-
     result = []
     index = 0
     for line in run(["lsblk", "-dno", "NAME,TYPE,SIZE,MODEL"]).splitlines():
@@ -404,16 +407,25 @@ def poll_disks() -> list[Hardware]:
         result.append(hw)
         index += 1
 
-    _disk_cache.update(ts=now, data=result)
     return result
 
 
-SOURCES = (poll_cpu, poll_gpus, poll_ipmi, poll_memory, poll_disks)
+# Each source with the interval it is polled at. Slow sources must never
+# delay fast ones — see the SLOW_INTERVAL comment above.
+SOURCES = (
+    (poll_cpu,    "cpu",    None),           # None = fast interval (CLI/--interval)
+    (poll_gpus,   "gpus",   None),
+    (poll_memory, "memory", None),
+    (poll_ipmi,   "ipmi",   SLOW_INTERVAL),
+    (poll_disks,  "disks",  DISK_INTERVAL),
+)
 
 
 def poll_all() -> list[Hardware]:
+    """Poll every source once, in order. Used by --list-sensors and tests."""
     hardware = []
-    for source in SOURCES:
+    for entry in SOURCES:
+        source = entry[0] if isinstance(entry, tuple) else entry
         try:
             hardware.extend(source())
         except Exception:
@@ -422,38 +434,55 @@ def poll_all() -> list[Hardware]:
     return hardware
 
 
-def poller(stop: threading.Event) -> None:
-    """Background loop: refresh readings and track min/max since start."""
+def _store(key: str, hardware: list[Hardware]) -> None:
+    """Publish one source's readings and update its min/max bounds."""
+    with _lock:
+        for hw in hardware:
+            for sensor in hw.sensors:
+                if sensor.value is None:
+                    continue
+                bounds = _minmax.get(sensor.sid)
+                if bounds is None:
+                    _minmax[sensor.sid] = [sensor.value, sensor.value]
+                else:
+                    bounds[0] = min(bounds[0], sensor.value)
+                    bounds[1] = max(bounds[1], sensor.value)
+        _results[key] = hardware
+        _snapshot["ts"] = time.time()
+
+
+def poller(stop: threading.Event, source=None, key: str = "", interval=None) -> None:
+    """Refresh one source on its own cadence until stopped.
+
+    One thread per source. A BMC that takes 13 seconds to answer therefore
+    delays only its own readings — CPU and GPU keep updating at the fast
+    interval, which is what a hardware panel needs to look alive.
+    """
     while not stop.is_set():
         try:
-            hardware = poll_all()
-            with _lock:
-                for hw in hardware:
-                    for sensor in hw.sensors:
-                        if sensor.value is None:
-                            continue
-                        bounds = _minmax.get(sensor.sid)
-                        if bounds is None:
-                            _minmax[sensor.sid] = [sensor.value, sensor.value]
-                        else:
-                            bounds[0] = min(bounds[0], sensor.value)
-                            bounds[1] = max(bounds[1], sensor.value)
-                _snapshot["hardware"] = hardware
-                _snapshot["ts"] = time.time()
+            _store(key, source())
         except Exception:
             # Keep polling even if one cycle fails.
             pass
-        stop.wait(CONFIG["interval"])
+        stop.wait(interval if interval is not None else CONFIG["interval"])
 
 
 # ---------------------------------------------------------------------------
 # /data.json — the LibreHardwareMonitor tree
 # ---------------------------------------------------------------------------
 
-def build_data_json() -> dict:
+def _current() -> tuple[list, dict]:
+    """Assemble the latest readings from every source, in SOURCES order."""
     with _lock:
-        hardware = list(_snapshot["hardware"])
-        bounds = dict(_minmax)
+        hardware = []
+        for entry in SOURCES:
+            key = entry[1] if isinstance(entry, tuple) else entry.__name__
+            hardware.extend(_results.get(key, []))
+        return hardware, dict(_minmax)
+
+
+def build_data_json() -> dict:
+    hardware, bounds = _current()
 
     counter = iter(range(10 ** 9))
 
@@ -543,8 +572,7 @@ def escape(text: str) -> str:
 
 
 def build_metrics() -> str:
-    with _lock:
-        hardware = list(_snapshot["hardware"])
+    hardware, _ = _current()
 
     lines: list[str] = []
     declared: set[str] = set()
@@ -735,15 +763,19 @@ def main(argv=None) -> int:
         print("note: not running as root — IPMI and SMART sensors are "
               "typically unavailable", flush=True)
 
+    # One thread per source, each on its own cadence.
     stop = threading.Event()
-    thread = threading.Thread(target=poller, args=(stop,), daemon=True)
-    thread.start()
+    for source, key, interval in SOURCES:
+        threading.Thread(target=poller, args=(stop, source, key, interval),
+                         name=f"poll-{key}", daemon=True).start()
 
-    # Wait briefly so the first request already has data.
+    # Wait briefly so the first request already has data. Only the fast
+    # sources are awaited — a slow BMC must not delay startup.
     deadline = time.time() + 20
+    fast = {key for source, key, interval in SOURCES if interval is None}
     while time.time() < deadline:
         with _lock:
-            if _snapshot["hardware"]:
+            if any(_results.get(k) for k in fast):
                 break
         time.sleep(0.25)
 

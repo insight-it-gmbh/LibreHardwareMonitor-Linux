@@ -133,7 +133,7 @@ Every option has a CLI flag and an environment variable.
 |---|---|---|---|
 | `-p, --port` | `LHM_PORT` | `8085` | Listen port |
 | `-b, --bind` | `LHM_BIND` | `0.0.0.0` | Bind address |
-| `-i, --interval` | `LHM_INTERVAL` | `2.0` | Poll interval in seconds |
+| `-i, --interval` | `LHM_INTERVAL` | `2.0` | Poll interval for fast sensors, in seconds |
 | `--decimal` | `LHM_DECIMAL` | `comma` | `comma` or `dot` (see below) |
 | `--hostname` | `LHM_HOSTNAME` | system hostname | Name of the computer node |
 | `--list-sensors` | — | — | Print detected sensors and exit |
@@ -142,6 +142,21 @@ Every option has a CLI flag and an environment variable.
 For the systemd unit, edit the `Environment=` lines in
 `/etc/systemd/system/lhm-linux.service`, then
 `systemctl daemon-reload && systemctl restart lhm-linux`.
+
+### Polling cadence
+
+Sources are polled in separate threads at different rates, because they differ wildly
+in cost:
+
+| Source | Interval | Why |
+|---|---|---|
+| CPU, GPU, memory | `--interval` (2 s) | Cheap: a few milliseconds per read |
+| BMC / IPMI | 30 s | `ipmitool sdr` can take 5-13 seconds to answer |
+| Disks (SMART) | 300 s | Expensive, and can spin up sleeping disks |
+
+This matters more than it sounds. With a single shared loop, one slow BMC drags the
+whole cycle out to its own speed, and CPU and GPU readings update far slower than
+configured — on a hardware panel that looks like a frozen display.
 
 ### Decimal separator
 

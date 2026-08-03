@@ -202,11 +202,9 @@ Please keep the zero-dependency, standard-library-only constraint.
   <img src=".assets/brand.png" alt="Insight-IT GmbH — IT-Systemhaus Berlin" height="60">
 </a>
 
-**[Insight-IT GmbH](https://www.insight-it.de)** is an IT systems house in Berlin, Germany.
-For over 25 years we have run infrastructure for companies of every size, from mid-sized
-businesses to enterprise and public-sector clients — and today we run **sovereign AI**:
-large language models, speech and document AI on our **own GPU cluster**, hosted in
-Germany, instead of someone else's cloud black box.
+**Insight-IT GmbH** is an IT service provider in Berlin, Germany. Since over 25 years we are running IT infrastructure for companies of any size, from small, mid-sized to enterprise bussinesses and public-sector clients.
+
+Today we also run sovereign AI: large language models, speech and document AI on our own GPU cluster, hosted in Germany. EU AI Act conform, auditable data handling.
 
 That is where this tool comes from. Operating a GPU cluster means watching thermals,
 power draw and VRAM continuously — but every hardware panel on the market speaks only

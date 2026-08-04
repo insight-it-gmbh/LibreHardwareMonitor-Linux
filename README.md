@@ -2,6 +2,7 @@
 
 **Read Linux hardware sensors with LibreHardwareMonitor clients.**
 
+[![CI](https://github.com/insight-it-gmbh/LibreHardwareMonitor-Linux/actions/workflows/ci.yml/badge.svg)](https://github.com/insight-it-gmbh/LibreHardwareMonitor-Linux/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Python 3.9+](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Dependencies: none](https://img.shields.io/badge/Dependencies-none-brightgreen.svg)](#)

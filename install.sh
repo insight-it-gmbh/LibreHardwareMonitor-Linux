@@ -5,7 +5,7 @@
 #   sudo ./install.sh --uninstall  stop, disable and remove
 set -euo pipefail
 
-PREFIX="/opt/lhm-linux"
+PREFIX="${LHM_PREFIX:-/opt/lhm-linux}"
 UNIT="/etc/systemd/system/lhm-linux.service"
 SERVICE="lhm-linux"
 PORT="${LHM_PORT:-8085}"
@@ -14,13 +14,43 @@ SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 die() { echo "error: $*" >&2; exit 1; }
 
+usage() {
+  cat <<USAGE
+Usage: sudo ./install.sh [--prefix DIR] [--port N]
+       sudo ./install.sh --uninstall
+
+  --prefix DIR   Install location (default: /opt/lhm-linux).
+                 Use a writable data pool on appliances with a read-only
+                 root filesystem, e.g. TrueNAS: --prefix /mnt/pool/lhm-linux
+  --port N       Listen port (default: 8085, the LibreHardwareMonitor default)
+USAGE
+}
+
+ACTION="install"
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --prefix) [ -n "${2:-}" ] || die "--prefix needs a directory"; PREFIX="$2"; shift 2 ;;
+    --port)   [ -n "${2:-}" ] || die "--port needs a number"; PORT="$2"; shift 2 ;;
+    --uninstall) ACTION="uninstall"; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) die "unknown option: $1 (try --help)" ;;
+  esac
+done
+
 [ "$(id -u)" -eq 0 ] || die "must be run as root (try: sudo $0)"
 
-if [ "${1:-}" = "--uninstall" ]; then
+if [ "$ACTION" = "uninstall" ]; then
   echo "Removing $SERVICE ..."
+  # Read the real install path out of the unit before deleting it, so a
+  # custom --prefix from install time is removed too.
+  if [ -f "$UNIT" ]; then
+    INSTALLED=$(sed -n 's|^ExecStart=.*python3 \(.*\)/server\.py|\1|p' "$UNIT")
+    [ -n "$INSTALLED" ] && PREFIX="$INSTALLED"
+  fi
   systemctl disable --now "$SERVICE" 2>/dev/null || true
   rm -f "$UNIT"
   rm -rf "$PREFIX"
+  echo "  removed $PREFIX"
   systemctl daemon-reload
   echo "Done."
   exit 0
@@ -45,7 +75,8 @@ install -d -m 0755 "$PREFIX"
 install -m 0755 "$SRC_DIR/lhmlinux/server.py" "$PREFIX/server.py"
 
 echo "==> Writing $UNIT"
-sed "s|LHM_PORT=8085|LHM_PORT=$PORT|" \
+sed -e "s|LHM_PORT=8085|LHM_PORT=$PORT|" \
+    -e "s|/opt/lhm-linux|$PREFIX|g" \
     "$SRC_DIR/systemd/lhm-linux.service" > "$UNIT"
 chmod 0644 "$UNIT"
 

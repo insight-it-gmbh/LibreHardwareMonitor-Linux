@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-03
+
+### Added
+- `install.sh --prefix DIR` for appliances with a read-only root filesystem, where
+  `/opt` cannot be written (TrueNAS SCALE and other ZFS-on-root systems). The systemd
+  unit follows the chosen path.
+- `install.sh --port N` and `--help`; unknown options now fail with a clear message
+  instead of being ignored.
+- README section on platform quirks: what a VM can and cannot report, and how to
+  install on a read-only root.
+
+### Fixed
+- `--uninstall` now reads the real install path out of the unit file, so a custom
+  `--prefix` is removed too instead of being left behind.
+
 ## [1.1.0] - 2026-08-03
 
 ### Fixed

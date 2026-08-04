@@ -190,11 +190,39 @@ root (Text: "Sensor", Version)
             └── sensor (SensorId, Type, Value, Min, Max, Raw*)
 ```
 
+## Platform notes
+
+Two environments need a second look before you install.
+
+**Virtual machines report almost nothing.** In a VM there is no BMC (`/dev/ipmi0` is
+absent), `/sys/class/hwmon` is empty and there are no physical disks, so CPU
+temperatures, fans, voltages and SMART all disappear — those readings stay with the
+hypervisor. `sensors` printing *"No sensors found!"* is expected here, not a fault worth
+debugging. A passed-through GPU still reports fully, as do memory and load. Check what
+you will get before installing:
+
+```bash
+ls /sys/class/hwmon | wc -l    # 0 = no hardware sensors in this guest
+ls /dev/ipmi* 2>/dev/null      # missing = no BMC
+```
+
+**Appliances with a read-only root** (TrueNAS SCALE, and other ZFS-on-root systems)
+reject `/opt`. Install to a writable data pool instead:
+
+```bash
+sudo ./install.sh --prefix /mnt/pool/lhm-linux
+```
+
+On TrueNAS the unit in `/etc/systemd/system` also does not survive a system update,
+because the boot pool is replaced wholesale. Register a small restore script as a
+POSTINIT init script so the service comes back on its own.
+
 ## Compatibility
 
-Tested on Ubuntu 26.04 with Python 3.14 (a dual-socket Xeon server with 6 NVIDIA GPUs, a
-Supermicro BMC and 4 disks) and validated against LibreHardwareMonitor 0.9.4 running on
-Windows 11. It should work on any Linux with Python 3.9 or newer; the sensor tooling is
+Tested on Ubuntu 24.04 and 26.04 (Python 3.12 / 3.14), Debian 12 on TrueNAS SCALE, and
+inside a Hyper-V guest — against NVIDIA GPUs, Intel CPUs, a Supermicro BMC and SATA/SAS
+disks, and validated field by field against LibreHardwareMonitor 0.9.4 on Windows 11.
+It should work on any Linux with Python 3.9 or newer; the sensor tooling is
 distribution-independent.
 
 ## Security

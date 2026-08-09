@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project adheres to
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-08-09
+
+### Fixed
+- **A broken `nvidia-smi` no longer silently drops all GPU sensors.** After a
+  kernel or driver update the loaded kernel module and the userspace NVML
+  library can disagree (`Failed to initialize NVML: Driver/library version
+  mismatch`). `nvidia-smi` exits non-zero, the GPU source yielded nothing, and
+  the service kept answering HTTP 200 — a hardware panel showed CPU values but
+  empty GPU tiles, with no trace in the logs. `poll_gpus()` now distinguishes
+  "tool missing" (no NVIDIA hardware, still silent) from "tool present but
+  broken" and logs a one-time warning with the exact `nvidia-smi` error.
+- New `run_full()` helper returns `(stdout, stderr, returncode)` so sources can
+  tell a missing tool apart from a failing one.
+
+### Added
+- README troubleshooting section: "GPU sensors are missing, but CPU/memory
+  still report" — how to spot a driver/library mismatch in seconds and the
+  reboot fix.
+
 ## [1.2.0] - 2026-08-03
 
 ### Added

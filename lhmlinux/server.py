@@ -40,7 +40,7 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
-__version__ = "1.2.0"
+__version__ = "1.3.0"
 __author__ = "Dominic Ballenthin, Insight-IT GmbH"
 __license__ = "MIT"
 
@@ -63,6 +63,9 @@ _lock = threading.Lock()
 _snapshot: dict = {"ts": 0.0, "hardware": []}
 _results: dict[str, list] = {}         # source key -> its most recent readings
 _minmax: dict[str, list[float]] = {}   # SensorId -> [min, max] since start
+# Distinct nvidia-smi failure messages already warned about (dedup so a
+# broken driver does not spam the log on every poll cycle).
+_GPU_SOURCE_WARNED: set[str] = set()
 
 # Populated from CLI arguments in main().
 CONFIG = {"decimal_comma": True, "hostname": None, "interval": DEFAULT_INTERVAL}
@@ -70,12 +73,23 @@ CONFIG = {"decimal_comma": True, "hostname": None, "interval": DEFAULT_INTERVAL}
 
 def run(cmd: list[str], timeout: int = 20) -> str:
     """Run a command and return stdout, or "" on any failure."""
+    return run_full(cmd, timeout)[0]
+
+
+def run_full(cmd: list[str], timeout: int = 20) -> tuple[str, str, int]:
+    """Run a command, returning (stdout, stderr, returncode).
+
+    Unlike ``run()`` this lets callers distinguish "tool missing"
+    (returncode -1) from "tool present but broken" (non-zero returncode
+    with a stderr message) — e.g. ``nvidia-smi`` failing with
+    "Driver/library version mismatch" after a kernel or driver update.
+    """
     try:
         proc = subprocess.run(cmd, capture_output=True, text=True,
                               timeout=timeout, check=False)
-        return proc.stdout if proc.returncode == 0 else ""
+        return proc.stdout, proc.stderr, proc.returncode
     except (OSError, subprocess.SubprocessError):
-        return ""
+        return "", "", -1
 
 
 def to_float(value) -> float | None:
@@ -191,9 +205,23 @@ GPU_QUERY = ("index,name,temperature.gpu,utilization.gpu,utilization.memory,"
 
 
 def poll_gpus() -> list[Hardware]:
-    out = run(["nvidia-smi", f"--query-gpu={GPU_QUERY}",
-               "--format=csv,noheader,nounits"])
+    out, err, rc = run_full(["nvidia-smi", f"--query-gpu={GPU_QUERY}",
+                             "--format=csv,noheader,nounits"])
     result = []
+    if rc != 0:
+        # rc == -1: nvidia-smi is not installed (no NVIDIA hardware) —
+        # silently return no GPUs, same as before. Any other non-zero
+        # exit means the tool is PRESENT but broken, e.g. "Failed to
+        # initialize NVML: Driver/library version mismatch" after a kernel
+        # or driver update. That used to silently drop all GPU sensors
+        # while the service kept reporting healthy; warn once instead.
+        if rc != -1:
+            msg = (err or f"nvidia-smi exited with status {rc}").strip()
+            if msg not in _GPU_SOURCE_WARNED:
+                _GPU_SOURCE_WARNED.add(msg)
+                print(f"warning: GPU sensors unavailable — {msg}",
+                      flush=True)
+        return result
     for line in out.strip().splitlines():
         cols = [c.strip() for c in line.split(",")]
         if len(cols) < 12:

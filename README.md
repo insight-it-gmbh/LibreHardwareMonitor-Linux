@@ -218,6 +218,37 @@ On TrueNAS the unit in `/etc/systemd/system` also does not survive a system upda
 because the boot pool is replaced wholesale. Register a small restore script as a
 POSTINIT init script so the service comes back on its own.
 
+## Troubleshooting
+
+### GPU sensors are missing, but CPU/memory still report
+
+The most common cause is not a misconfiguration: `nvidia-smi` itself is broken on
+the host. After a kernel or driver update the loaded kernel module and the
+userspace NVML library can disagree:
+
+```text
+$ nvidia-smi
+Failed to initialize NVML: Driver/library version mismatch
+NVML library version: 595.84
+```
+
+`nvidia-smi` then exits non-zero, so the GPU source yields no readings. Until
+v1.3.0 this happened **silently** — `/data.json` simply contained no GPU nodes
+while the service kept answering HTTP 200, and a hardware panel showed CPU values
+but empty GPU tiles. Since v1.3.0 the service logs a one-time warning on stderr
+with the exact `nvidia-smi` error, so the failure is visible in
+`journalctl -u lhm-linux` instead of vanishing.
+
+Check it in seconds:
+
+```bash
+nvidia-smi --query-gpu=name --format=csv,noheader   # must list your GPUs
+journalctl -u lhm-linux -n 50 | grep -i warning     # "GPU sensors unavailable"
+```
+
+The fix is a reboot (the new kernel module loads and matches the library), or a
+clean driver reinstall. Nothing on the lhm-linux side needs changing.
+
 ## Compatibility
 
 Tested on Ubuntu 24.04 and 26.04 (Python 3.12 / 3.14), Debian 12 on TrueNAS SCALE, and

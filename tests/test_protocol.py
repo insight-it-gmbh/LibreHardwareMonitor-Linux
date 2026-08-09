@@ -277,6 +277,63 @@ class TestRobustness(unittest.TestCase):
             result = source()
             self.assertIsInstance(result, list, key)
 
+    def test_gpu_source_warns_on_broken_nvidia_smi(self):
+        """A broken nvidia-smi must warn, not silently drop GPU sensors.
+
+        After a kernel or driver update the loaded kernel module and the
+        userspace NVML library can disagree ("Driver/library version
+        mismatch"). nvidia-smi then exits non-zero while the service still
+        looks healthy — which used to silently remove every GPU sensor.
+        """
+        import io
+        from contextlib import redirect_stdout
+
+        class _Proc:
+            returncode = 1
+            stdout = ""
+            stderr = "Failed to initialize NVML: Driver/library version mismatch\n"
+
+        def fake_run(cmd, capture_output=True, text=True,
+                     timeout=20, check=False):
+            return _Proc()
+
+        original = server.subprocess.run
+        server.subprocess.run = fake_run
+        server._GPU_SOURCE_WARNED.clear()
+        buf = io.StringIO()
+        try:
+            with redirect_stdout(buf):
+                result = server.poll_gpus()
+            self.assertEqual(result, [])
+            self.assertIn("Driver/library version mismatch", buf.getvalue())
+            self.assertIn("GPU sensors unavailable", buf.getvalue())
+            # Same failure must not spam the log on the next cycle.
+            with redirect_stdout(buf):
+                server.poll_gpus()
+            self.assertEqual(buf.getvalue().count("GPU sensors unavailable"), 1)
+        finally:
+            server.subprocess.run = original
+
+    def test_gpu_source_stays_silent_without_nvidia_smi(self):
+        """No nvidia-smi binary (no NVIDIA hardware) must stay quiet."""
+        import io
+        from contextlib import redirect_stdout
+
+        def fake_run(cmd, capture_output=True, text=True,
+                     timeout=20, check=False):
+            raise FileNotFoundError("nvidia-smi")
+
+        original = server.subprocess.run
+        server.subprocess.run = fake_run
+        buf = io.StringIO()
+        try:
+            with redirect_stdout(buf):
+                result = server.poll_gpus()
+            self.assertEqual(result, [])
+            self.assertEqual(buf.getvalue(), "")
+        finally:
+            server.subprocess.run = original
+
     def test_poll_all_survives_a_broken_source(self):
         def broken():
             raise RuntimeError("simulated failure")

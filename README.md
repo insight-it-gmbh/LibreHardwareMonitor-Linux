@@ -263,7 +263,7 @@ Built and maintained by **[Dominic Ballenthin](https://github.com/subbie5000)**.
 *We run your AI.* → **[insight-it.de](https://www.insight-it.de)**
 
 [![Website](https://img.shields.io/badge/Website-insight--it.de-9DCD5A?style=flat-square&logo=firefoxbrowser&logoColor=white)](https://www.insight-it.de)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Insight--IT-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/insight-it-gmbh-06b979171/)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Insight--IT-0A66C2?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/insight-it-gmbh/)
 [![Facebook](https://img.shields.io/badge/Facebook-Insight--IT-1877F2?style=flat-square&logo=facebook&logoColor=white)](https://www.facebook.com/insightitberlin/)
 [![GitHub](https://img.shields.io/badge/GitHub-insight--it--gmbh-181717?style=flat-square&logo=github&logoColor=white)](https://github.com/insight-it-gmbh)
 

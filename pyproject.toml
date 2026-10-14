@@ -6,10 +6,10 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Dominic Ballenthin", email = "dominic.ballenthin@insight-it.de" },
+    { name = "Dominic Ballenthin", email = "admin@insight-it.de" },
 ]
 maintainers = [
-    { name = "Insight-IT GmbH", email = "dominic.ballenthin@insight-it.de" },
+    { name = "Insight-IT GmbH", email = "admin@insight-it.de" },
 ]
 keywords = ["monitoring", "sensors", "librehardwaremonitor", "prometheus",
             "temperature", "gpu", "ipmi", "smart"]

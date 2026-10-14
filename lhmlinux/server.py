@@ -24,7 +24,7 @@ Sensor sources (each is optional and skipped when unavailable)
     smartctl     Disk temperatures
     /proc        Memory usage and load average
 
-Author:  Dominic Ballenthin <dominic.ballenthin@insight-it.de>
+Author:  Dominic Ballenthin <admin@insight-it.de>
 Company: Insight-IT GmbH, Berlin — https://www.insight-it.de
 SPDX-License-Identifier: MIT
 """
